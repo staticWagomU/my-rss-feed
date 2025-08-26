@@ -280,7 +280,7 @@
                   <div class="article-description">${escapeHtml(article.description)}</div>
                 ` : ''}
                 <div class="article-date">
-                  追加日時: ${new Date(article.read_at).toLocaleString('ja-JP')}
+                  追加日時: ${new Date(article.read_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
                 </div>
               </div>
               <div class="article-actions">
