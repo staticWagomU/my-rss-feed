@@ -11,7 +11,7 @@ export async function fetchTitle(url: string): Promise<string> {
         'User-Agent': 'Mozilla/5.0 (compatible; RSS-Feed-Bot/1.0)',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'ja,en;q=0.9',
-        'Accept-Charset': 'utf-8',
+        'Accept-Encoding': 'gzip, deflate, br',
       }
     });
     
@@ -27,7 +27,56 @@ export async function fetchTitle(url: string): Promise<string> {
       return extractDomainFromUrl(url);
     }
     
-    const html = await response.text();
+    // ArrayBufferとして取得してから、適切にデコード
+    const buffer = await response.arrayBuffer();
+    
+    // Content-Typeからcharsetを取得
+    let charset = 'utf-8';
+    const charsetMatch = contentType.match(/charset=([^;]+)/i);
+    if (charsetMatch) {
+      charset = charsetMatch[1].trim().toLowerCase();
+      // 一般的なcharsetエイリアスを正規化
+      if (charset === 'shift_jis' || charset === 'shift-jis' || charset === 'sjis') {
+        charset = 'shift_jis';
+      } else if (charset === 'euc-jp' || charset === 'eucjp') {
+        charset = 'euc-jp';
+      } else if (charset === 'iso-2022-jp') {
+        charset = 'iso-2022-jp';
+      }
+    }
+    
+    // 一旦UTF-8でデコードして、metaタグからcharsetを探す
+    const tempDecoder = new TextDecoder('utf-8', { fatal: false });
+    const tempHtml = tempDecoder.decode(buffer);
+    
+    // HTMLメタタグからcharsetを検出
+    const metaCharsetMatch = tempHtml.match(/<meta[^>]+charset=["']?([^"'\s>]+)/i);
+    if (metaCharsetMatch) {
+      const metaCharset = metaCharsetMatch[1].trim().toLowerCase();
+      if (metaCharset && metaCharset !== charset) {
+        charset = metaCharset;
+        // 一般的なcharsetエイリアスを正規化
+        if (charset === 'shift_jis' || charset === 'shift-jis' || charset === 'sjis') {
+          charset = 'shift_jis';
+        } else if (charset === 'euc-jp' || charset === 'eucjp') {
+          charset = 'euc-jp';
+        } else if (charset === 'iso-2022-jp') {
+          charset = 'iso-2022-jp';
+        }
+      }
+    }
+    
+    // 最終的なデコード
+    let html: string;
+    try {
+      const decoder = new TextDecoder(charset, { fatal: false });
+      html = decoder.decode(buffer);
+    } catch (e) {
+      // charsetがサポートされていない場合はUTF-8でフォールバック
+      console.warn(`Unsupported charset: ${charset}, falling back to UTF-8`);
+      const decoder = new TextDecoder('utf-8', { fatal: false });
+      html = decoder.decode(buffer);
+    }
     
     const dom = htmlparser2.parseDocument(html);
     const titleElement = htmlparser2.DomUtils.findOne(
