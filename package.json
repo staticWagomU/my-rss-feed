@@ -2,6 +2,7 @@
   "name": "my-rss-feed",
   "type": "module",
   "scripts": {
+    "wrangler": "wrangler",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
