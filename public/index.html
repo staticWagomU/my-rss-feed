@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSS Feed Manager</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    
+    .add-form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #0051a3;
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .articles {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .article {
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    
+    .article:last-child {
+      border-bottom: none;
+    }
+    
+    .article-info {
+      flex: 1;
+    }
+    
+    .article-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .article-url {
+      color: #007aff;
+      text-decoration: none;
+      font-size: 14px;
+      word-break: break-all;
+    }
+    
+    .article-description {
+      color: #666;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    
+    .article-date {
+      color: #999;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    .delete-btn {
+      background: #ff3b30;
+      padding: 6px 12px;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    
+    .delete-btn:hover {
+      background: #d70015;
+    }
+    
+    .message {
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .feed-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #ff9500;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 My Reading List</h1>
+  
+  <div class="add-form">
+    <h2>記事を追加</h2>
+    <form id="addForm">
+      <div class="form-group">
+        <label for="url">URL *</label>
+        <input type="url" id="url" name="url" required placeholder="https://example.com/article">
+      </div>
+      
+      <div class="form-group">
+        <label for="title">タイトル（省略可）</label>
+        <input type="text" id="title" name="title" placeholder="記事のタイトル">
+      </div>
+      
+      <div class="form-group">
+        <label for="description">メモ（省略可）</label>
+        <textarea id="description" name="description" placeholder="この記事についてのメモ"></textarea>
+      </div>
+      
+      <button type="submit">追加</button>
+    </form>
+  </div>
+  
+  <div id="message"></div>
+  
+  <a href="/feed.xml" class="feed-link">🔗 RSS Feed</a>
+  
+  <h2 style="margin: 30px 0 20px;">記事一覧</h2>
+  <div class="articles" id="articlesList">
+    <p style="padding: 20px; text-align: center; color: #999;">読み込み中...</p>
+  </div>
+
+  <script>
+    const API_BASE = '';
+    
+    // 記事一覧を取得
+    async function loadArticles() {
+      try {
+        const response = await fetch(`${API_BASE}/api/articles`);
+        const data = await response.json();
+        
+        const container = document.getElementById('articlesList');
+        
+        if (data.articles && data.articles.length > 0) {
+          container.innerHTML = data.articles.map(article => `
+            <div class="article">
+              <div class="article-info">
+                <div class="article-title">${escapeHtml(article.title)}</div>
+                <a href="${escapeHtml(article.url)}" target="_blank" class="article-url">
+                  ${escapeHtml(article.url)}
+                </a>
+                ${article.description ? `
+                  <div class="article-description">${escapeHtml(article.description)}</div>
+                ` : ''}
+                <div class="article-date">
+                  ${new Date(article.read_at).toLocaleString('ja-JP')}
+                </div>
+              </div>
+              <button class="delete-btn" onclick="deleteArticle(${article.id})">削除</button>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = '<p style="padding: 20px; text-align: center; color: #999;">記事がありません</p>';
+        }
+      } catch (error) {
+        console.error('Failed to load articles:', error);
+        document.getElementById('articlesList').innerHTML = 
+          '<p style="padding: 20px; text-align: center; color: #ff3b30;">記事の読み込みに失敗しました</p>';
+      }
+    }
+    
+    // 記事を追加
+    document.getElementById('addForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = {
+        url: formData.get('url'),
+        title: formData.get('title'),
+        description: formData.get('description')
+      };
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '追加中...';
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/articles`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showMessage('記事を追加しました', 'success');
+          e.target.reset();
+          loadArticles();
+        } else {
+          showMessage(result.error || '追加に失敗しました', 'error');
+        }
+      } catch (error) {
+        showMessage('エラーが発生しました', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '追加';
+      }
+    });
+    
+    // 記事を削除
+    async function deleteArticle(id) {
+      if (!confirm('この記事を削除しますか？')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/api/articles/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showMessage('記事を削除しました', 'success');
+          loadArticles();
+        } else {
+          showMessage('削除に失敗しました', 'error');
+        }
+      } catch (error) {
+        showMessage('エラーが発生しました', 'error');
+      }
+    }
+    
+    // メッセージ表示
+    function showMessage(text, type) {
+      const messageEl = document.getElementById('message');
+      messageEl.className = `message ${type}`;
+      messageEl.textContent = text;
+      
+      setTimeout(() => {
+        messageEl.className = '';
+        messageEl.textContent = '';
+      }, 3000);
+    }
+    
+    // HTMLエスケープ
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    
+    // 初期読み込み
+    loadArticles();
+  </script>
+</body>
+</html>
