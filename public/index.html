@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RSS Feed Manager</title>
+  <title>記事を追加 - RSS Feed Manager</title>
   <style>
     * {
       margin: 0;
@@ -13,57 +13,89 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 800px;
+      max-width: 600px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 40px 20px;
       background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
     h1 {
       color: #333;
-      margin-bottom: 30px;
+      margin-bottom: 10px;
+      font-size: 28px;
     }
     
-    .add-form {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
+    .subtitle {
+      color: #666;
       margin-bottom: 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-size: 14px;
     }
     
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     
     label {
       display: block;
-      margin-bottom: 5px;
-      color: #666;
+      margin-bottom: 8px;
+      color: #444;
       font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .required {
+      color: #ff3b30;
+      margin-left: 2px;
     }
     
     input, textarea {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
       font-size: 16px;
+      transition: border-color 0.2s;
+    }
+    
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #007aff;
     }
     
     textarea {
       resize: vertical;
-      min-height: 60px;
+      min-height: 80px;
+      font-family: inherit;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
     }
     
     button {
+      flex: 1;
       background: #007aff;
       color: white;
       border: none;
-      padding: 12px 24px;
-      border-radius: 4px;
+      padding: 14px 24px;
+      border-radius: 8px;
       font-size: 16px;
+      font-weight: 500;
       cursor: pointer;
+      transition: background 0.2s;
     }
     
     button:hover {
@@ -75,67 +107,31 @@
       cursor: not-allowed;
     }
     
-    .articles {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .secondary-btn {
+      background: #f0f0f0;
+      color: #333;
     }
     
-    .article {
-      padding: 15px 20px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-    }
-    
-    .article:last-child {
-      border-bottom: none;
-    }
-    
-    .article-info {
-      flex: 1;
-    }
-    
-    .article-title {
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-    
-    .article-url {
-      color: #007aff;
-      text-decoration: none;
-      font-size: 14px;
-      word-break: break-all;
-    }
-    
-    .article-description {
-      color: #666;
-      font-size: 14px;
-      margin-top: 5px;
-    }
-    
-    .article-date {
-      color: #999;
-      font-size: 12px;
-      margin-top: 5px;
-    }
-    
-    .delete-btn {
-      background: #ff3b30;
-      padding: 6px 12px;
-      font-size: 14px;
-      margin-left: 10px;
-    }
-    
-    .delete-btn:hover {
-      background: #d70015;
+    .secondary-btn:hover {
+      background: #e0e0e0;
     }
     
     .message {
-      padding: 10px 15px;
-      border-radius: 4px;
+      padding: 12px 16px;
+      border-radius: 8px;
       margin-bottom: 20px;
+      animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     .success {
@@ -150,107 +146,111 @@
       border: 1px solid #f5c6cb;
     }
     
-    .feed-link {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #ff9500;
-      color: white;
+    .links {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #e0e0e0;
+      text-align: center;
+    }
+    
+    .links a {
+      color: #007aff;
       text-decoration: none;
-      border-radius: 4px;
+      margin: 0 15px;
+      font-size: 14px;
+    }
+    
+    .links a:hover {
+      text-decoration: underline;
+    }
+    
+    .help-text {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>📚 My Reading List</h1>
-  
-  <div class="add-form">
-    <h2>記事を追加</h2>
+  <div class="container">
+    <h1>記事を追加</h1>
+    <p class="subtitle">読んだ記事のURLを保存して、RSSフィードとして配信します</p>
+    
+    <div id="message"></div>
+    
     <form id="addForm">
       <div class="form-group">
-        <label for="url">URL *</label>
-        <input type="url" id="url" name="url" required placeholder="https://example.com/article">
+        <label for="url">
+          URL
+          <span class="required">*</span>
+        </label>
+        <input 
+          type="url" 
+          id="url" 
+          name="url" 
+          required 
+          placeholder="https://example.com/article"
+          autofocus
+        >
+        <p class="help-text">記事のURLを入力してください（タイトルは自動取得されます）</p>
       </div>
       
       <div class="form-group">
-        <label for="title">タイトル（省略可）</label>
-        <input type="text" id="title" name="title" placeholder="記事のタイトル">
+        <label for="description">メモ</label>
+        <textarea 
+          id="description" 
+          name="description" 
+          placeholder="この記事についてのメモ（省略可）"
+        ></textarea>
+        <p class="help-text">後で見返すときのためのメモを残せます</p>
       </div>
       
-      <div class="form-group">
-        <label for="description">メモ（省略可）</label>
-        <textarea id="description" name="description" placeholder="この記事についてのメモ"></textarea>
+      <div class="button-group">
+        <button type="submit" id="submitBtn">追加</button>
+        <button type="reset" class="secondary-btn">クリア</button>
       </div>
-      
-      <button type="submit">追加</button>
     </form>
-  </div>
-  
-  <div id="message"></div>
-  
-  <a href="/feed.xml" class="feed-link">🔗 RSS Feed</a>
-  
-  <h2 style="margin: 30px 0 20px;">記事一覧</h2>
-  <div class="articles" id="articlesList">
-    <p style="padding: 20px; text-align: center; color: #999;">読み込み中...</p>
+    
+    <div class="links">
+      <a href="/articles">記事一覧</a>
+      <a href="/feed.xml">RSS Feed</a>
+    </div>
   </div>
 
   <script>
-    const API_BASE = '';
-    
-    // 記事一覧を取得
-    async function loadArticles() {
-      try {
-        const response = await fetch(`${API_BASE}/api/articles`);
-        const data = await response.json();
-        
-        const container = document.getElementById('articlesList');
-        
-        if (data.articles && data.articles.length > 0) {
-          container.innerHTML = data.articles.map(article => `
-            <div class="article">
-              <div class="article-info">
-                <div class="article-title">${escapeHtml(article.title)}</div>
-                <a href="${escapeHtml(article.url)}" target="_blank" class="article-url">
-                  ${escapeHtml(article.url)}
-                </a>
-                ${article.description ? `
-                  <div class="article-description">${escapeHtml(article.description)}</div>
-                ` : ''}
-                <div class="article-date">
-                  ${new Date(article.read_at).toLocaleString('ja-JP')}
-                </div>
-              </div>
-              <button class="delete-btn" onclick="deleteArticle(${article.id})">削除</button>
-            </div>
-          `).join('');
-        } else {
-          container.innerHTML = '<p style="padding: 20px; text-align: center; color: #999;">記事がありません</p>';
-        }
-      } catch (error) {
-        console.error('Failed to load articles:', error);
-        document.getElementById('articlesList').innerHTML = 
-          '<p style="padding: 20px; text-align: center; color: #ff3b30;">記事の読み込みに失敗しました</p>';
-      }
-    }
-    
-    // 記事を追加
+    // フォーム送信処理
     document.getElementById('addForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const formData = new FormData(e.target);
+      const urlInput = formData.get('url');
+      
+      // URLバリデーション
+      try {
+        const urlObj = new URL(urlInput);
+        if (!['http:', 'https:'].includes(urlObj.protocol)) {
+          showMessage('HTTPまたはHTTPSのURLを入力してください', 'error');
+          return;
+        }
+      } catch (error) {
+        showMessage('正しいURL形式を入力してください', 'error');
+        return;
+      }
+      
       const data = {
-        url: formData.get('url'),
-        title: formData.get('title'),
-        description: formData.get('description')
+        url: urlInput,
+        description: formData.get('description') || ''
       };
       
-      const submitBtn = e.target.querySelector('button[type="submit"]');
+      console.log('送信データ:', data);
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.textContent;
       submitBtn.disabled = true;
       submitBtn.textContent = '追加中...';
       
       try {
-        const response = await fetch(`${API_BASE}/api/articles`, {
+        const response = await fetch('/api/articles', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -258,44 +258,30 @@
           body: JSON.stringify(data)
         });
         
+        console.log('APIレスポンス:', response.status, response.statusText);
+        
         const result = await response.json();
+        console.log('レスポンスデータ:', result);
         
         if (response.ok) {
-          showMessage('記事を追加しました', 'success');
+          showMessage('記事を追加しました！', 'success');
+          console.log('記事追加成功:', result);
           e.target.reset();
-          loadArticles();
+          document.getElementById('url').focus();
         } else {
-          showMessage(result.error || '追加に失敗しました', 'error');
+          const errorMsg = result.error || '追加に失敗しました';
+          showMessage(errorMsg, 'error');
+          console.error('記事追加エラー:', errorMsg);
         }
       } catch (error) {
-        showMessage('エラーが発生しました', 'error');
+        console.error('記事追加中のエラー:', error);
+        console.error('エラースタック:', error.stack);
+        showMessage(`エラーが発生しました: ${error.message}`, 'error');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = '追加';
+        submitBtn.textContent = originalText;
       }
     });
-    
-    // 記事を削除
-    async function deleteArticle(id) {
-      if (!confirm('この記事を削除しますか？')) {
-        return;
-      }
-      
-      try {
-        const response = await fetch(`${API_BASE}/api/articles/${id}`, {
-          method: 'DELETE'
-        });
-        
-        if (response.ok) {
-          showMessage('記事を削除しました', 'success');
-          loadArticles();
-        } else {
-          showMessage('削除に失敗しました', 'error');
-        }
-      } catch (error) {
-        showMessage('エラーが発生しました', 'error');
-      }
-    }
     
     // メッセージ表示
     function showMessage(text, type) {
@@ -303,24 +289,19 @@
       messageEl.className = `message ${type}`;
       messageEl.textContent = text;
       
+      // 一定時間後に非表示
       setTimeout(() => {
         messageEl.className = '';
         messageEl.textContent = '';
-      }, 3000);
+      }, 5000);
     }
     
-    // HTMLエスケープ
-    function escapeHtml(unsafe) {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-    
-    // 初期読み込み
-    loadArticles();
+    // Enterキーでのsubmit制御（textareaでは改行を許可）
+    document.getElementById('description').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.stopPropagation();
+      }
+    });
   </script>
 </body>
 </html>

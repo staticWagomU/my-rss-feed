@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { generateRSS } from './utils/rss';
+import { fetchTitle } from './utils/title-fetcher';
 
 type Bindings = {
   DB: D1Database;
@@ -37,8 +38,8 @@ app.post('/api/articles', async (c) => {
       return c.json({ error: 'URL is required' }, 400);
     }
 
-    // タイトル取得（提供されない場合はURLから推測）
-    const title = body.title || new URL(body.url).hostname;
+    // URLからタイトルを自動取得
+    const title = await fetchTitle(body.url);
     const description = body.description || '';
 
     // データベースに保存
@@ -92,27 +93,4 @@ app.get('/feed.xml', async (c) => {
   }
 });
 
-// フロントエンドのHTMLを返す
-app.get('/', async (c) => {
-  return c.html(await getHTMLContent());
-});
-
 export default app;
-
-// HTMLコンテンツを取得する関数（実際にはpublic/index.htmlから読み込み）
-async function getHTMLContent() {
-  // Cloudflare Pagesは自動的にpublicフォルダを配信するので、
-  // この関数は実際には不要かもしれません
-  return `<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My RSS Feed Manager</title>
-</head>
-<body>
-  <h1>RSS Feed Manager</h1>
-  <p>Loading...</p>
-</body>
-</html>`;
-}
