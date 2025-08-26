@@ -2,7 +2,17 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "my-rss-feed",
   "main": "src/index.ts",
-  "compatibility_date": "2025-08-26"
+  "compatibility_date": "2025-08-26",
+  "assets": {
+    "directory": "./public/"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "rss-feed-db",
+      "database_id": "fd3551a1-87ae-44be-98ad-c63269518d8c"
+    }
+  ]
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],
