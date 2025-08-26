@@ -2,10 +2,13 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { generateRSS } from './utils/rss';
 import { fetchTitle } from './utils/title-fetcher';
+import { basicAuth } from './middleware/basic-auth';
 
 type Bindings = {
   DB: D1Database;
   API_KEY: string;
+  BASIC_USERNAME: string;
+  BASIC_PASSWORD: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -26,8 +29,8 @@ app.get('/api/articles', async (c) => {
   }
 });
 
-// 記事登録API
-app.post('/api/articles', async (c) => {
+// 記事登録API（認証必須）
+app.post('/api/articles', basicAuth, async (c) => {
   try {
     // API Key認証（ショートカット用）
     const apiKey = c.req.header('X-API-Key');
@@ -60,8 +63,8 @@ app.post('/api/articles', async (c) => {
   }
 });
 
-// 記事削除API
-app.delete('/api/articles/:id', async (c) => {
+// 記事削除API（認証必須）
+app.delete('/api/articles/:id', basicAuth, async (c) => {
   try {
     const id = c.req.param('id');
     

@@ -3,6 +3,9 @@
   "name": "my-rss-feed",
   "main": "src/index.ts",
   "compatibility_date": "2025-08-26",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "assets": {
     "directory": "./public/"
   },
