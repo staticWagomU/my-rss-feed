@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS articles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL UNIQUE,
+  description TEXT,
+  read_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_articles_read_at ON articles(read_at DESC);
