@@ -227,6 +227,17 @@
       font-size: 14px;
       color: #666;
     }
+
+    .exclude-badge {
+      background: #ff9500;
+      color: white;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -272,7 +283,10 @@
           container.innerHTML = data.articles.map(article => `
             <div class="article">
               <div class="article-info">
-                <div class="article-title">${escapeHtml(article.title)}</div>
+                <div class="article-title">
+                  ${escapeHtml(article.title)}
+                  ${article.exclude_from_rss ? '<span class="exclude-badge">RSS除外</span>' : ''}
+                </div>
                 <a href="${escapeHtml(article.url)}" target="_blank" class="article-url">
                   ${escapeHtml(article.url)}
                 </a>

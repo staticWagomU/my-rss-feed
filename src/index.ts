@@ -35,7 +35,7 @@ app.post('/api/articles', basicAuth, async (c) => {
     // API Key認証（ショートカット用）
     const apiKey = c.req.header('X-API-Key');
     const body = await c.req.json();
-    
+
     // 基本的なバリデーション
     if (!body.url) {
       return c.json({ error: 'URL is required' }, 400);
@@ -44,16 +44,17 @@ app.post('/api/articles', basicAuth, async (c) => {
     // URLからタイトルを自動取得
     const title = await fetchTitle(body.url);
     const description = body.description || '';
+    const excludeFromRss = body.exclude_from_rss ?? false;
 
     // データベースに保存
     await c.env.DB.prepare(
-      'INSERT INTO articles (title, url, description) VALUES (?, ?, ?)'
-    ).bind(title, body.url, description).run();
+      'INSERT INTO articles (title, url, description, exclude_from_rss) VALUES (?, ?, ?, ?)'
+    ).bind(title, body.url, description, excludeFromRss).run();
 
-    return c.json({ 
-      success: true, 
+    return c.json({
+      success: true,
       message: 'Article added successfully',
-      data: { title, url: body.url, description }
+      data: { title, url: body.url, description, exclude_from_rss: excludeFromRss }
     });
   } catch (error) {
     if (error.message.includes('UNIQUE')) {
@@ -82,11 +83,11 @@ app.delete('/api/articles/:id', basicAuth, async (c) => {
 app.get('/feed.xml', async (c) => {
   try {
     const { results } = await c.env.DB.prepare(
-      'SELECT * FROM articles ORDER BY read_at DESC LIMIT 50'
+      'SELECT * FROM articles WHERE exclude_from_rss = FALSE ORDER BY read_at DESC LIMIT 50'
     ).all();
-    
+
     const rssXml = generateRSS(results as any[]);
-    
+
     return c.text(rssXml, 200, {
       'Content-Type': 'application/rss+xml; charset=utf-8',
       'Cache-Control': 'max-age=3600'
