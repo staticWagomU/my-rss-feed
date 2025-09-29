@@ -169,6 +169,26 @@
       color: #999;
       margin-top: 5px;
     }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-label {
+      font-size: 14px;
+      color: #444;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -197,12 +217,22 @@
       
       <div class="form-group">
         <label for="description">メモ</label>
-        <textarea 
-          id="description" 
-          name="description" 
+        <textarea
+          id="description"
+          name="description"
           placeholder="この記事についてのメモ（省略可）"
         ></textarea>
         <p class="help-text">後で見返すときのためのメモを残せます</p>
+      </div>
+
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="excludeFromRss" name="excludeFromRss">
+          <label for="excludeFromRss" class="checkbox-label">
+            RSS feedから除外
+          </label>
+        </div>
+        <p class="help-text">チェックを入れると、この記事はRSS feedに含まれません</p>
       </div>
       
       <div class="button-group">
@@ -239,7 +269,8 @@
       
       const data = {
         url: urlInput,
-        description: formData.get('description') || ''
+        description: formData.get('description') || '',
+        exclude_from_rss: document.getElementById('excludeFromRss').checked
       };
       
       console.log('送信データ:', data);
