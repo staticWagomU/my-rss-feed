@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>質問 - Article Search</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 { color: #333; margin-bottom: 20px; font-size: 28px; }
+    .nav {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .nav a {
+      color: #007aff;
+      text-decoration: none;
+      margin-right: 20px;
+      font-size: 14px;
+    }
+    .nav a:hover { text-decoration: underline; }
+    .ask-form { margin-bottom: 30px; }
+    .ask-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+    .ask-input:focus {
+      outline: none;
+      border-color: #007aff;
+    }
+    .ask-btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+    }
+    .ask-btn:hover { background: #0051a3; }
+    .ask-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .answer-box {
+      background: #f8f9fa;
+      padding: 24px;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+    .answer-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .answer-content {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #333;
+      white-space: pre-wrap;
+    }
+    .sources {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+    }
+    .sources-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .source-item {
+      padding: 10px 12px;
+      background: white;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .source-item a { color: #007aff; text-decoration: none; }
+    .source-item a:hover { text-decoration: underline; }
+    .loading, .error {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    .error { color: #ff3b30; }
+    .help-text {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 20px;
+    }
+    .examples {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e0e0e0;
+    }
+    .examples-title {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .example-btn {
+      display: inline-block;
+      background: #f0f0f0;
+      color: #333;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      margin: 4px;
+      cursor: pointer;
+      border: none;
+    }
+    .example-btn:hover { background: #e0e0e0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">📝 記事追加</a>
+      <a href="/articles.html">📋 一覧</a>
+      <a href="/search.html">🔍 検索</a>
+      <a href="/feed.xml">📡 RSS</a>
+    </div>
+    
+    <h1>💬 記事に質問</h1>
+    <p class="help-text">登録した記事をもとにAIが回答します（RAG検索）</p>
+    
+    <form class="ask-form" id="askForm">
+      <textarea class="ask-input" id="question" placeholder="質問を入力してください..." required></textarea>
+      <button type="submit" class="ask-btn" id="askBtn">質問する</button>
+    </form>
+    
+    <div id="answer"></div>
+    
+    <div class="examples">
+      <p class="examples-title">質問の例:</p>
+      <button class="example-btn" onclick="setQuestion('A2Aプロトコルについて教えて')">A2Aプロトコルについて教えて</button>
+      <button class="example-btn" onclick="setQuestion('最近読んだ記事で面白かったものは？')">最近読んだ記事で面白かったものは？</button>
+      <button class="example-btn" onclick="setQuestion('AIエージェントに関する記事をまとめて')">AIエージェントに関する記事をまとめて</button>
+    </div>
+  </div>
+
+  <script>
+    function setQuestion(text) {
+      document.getElementById('question').value = text;
+      document.getElementById('question').focus();
+    }
+    
+    document.getElementById('askForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const question = document.getElementById('question').value.trim();
+      if (!question) return;
+      
+      const answer = document.getElementById('answer');
+      const askBtn = document.getElementById('askBtn');
+      
+      askBtn.disabled = true;
+      askBtn.textContent = '考え中...';
+      answer.innerHTML = '<div class="loading">AIが回答を生成中...</div>';
+      
+      try {
+        const response = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          answer.innerHTML = `<div class="error">エラー: ${data.error}</div>`;
+          return;
+        }
+        
+        let html = `
+          <div class="answer-box">
+            <p class="answer-label">💡 回答</p>
+            <div class="answer-content">${escapeHtml(data.answer)}</div>
+        `;
+        
+        if (data.sources && data.sources.length > 0) {
+          html += `
+            <div class="sources">
+              <p class="sources-label">📚 参照した記事</p>
+              ${data.sources.map(source => `
+                <div class="source-item">
+                  <a href="${escapeHtml(source.url || '#')}" target="_blank" rel="noopener">
+                    ${escapeHtml(source.title || source.document_name || '記事')}
+                  </a>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+        
+        html += '</div>';
+        answer.innerHTML = html;
+        
+      } catch (error) {
+        answer.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+      } finally {
+        askBtn.disabled = false;
+        askBtn.textContent = '質問する';
+      }
+    });
+    
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

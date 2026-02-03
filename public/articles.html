@@ -3,383 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>記事一覧 - RSS Feed Manager</title>
+  <title>記事一覧 - Article Search</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       max-width: 900px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 40px 20px;
       background: #f5f5f5;
+      min-height: 100vh;
     }
-    
-    header {
+    .container {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 { color: #333; margin-bottom: 30px; font-size: 28px; }
+    .nav {
       margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
     }
-    
-    h1 {
-      color: #333;
-      font-size: 24px;
-    }
-    
-    .nav-links {
-      display: flex;
-      gap: 20px;
-    }
-    
-    .nav-links a {
+    .nav a {
       color: #007aff;
       text-decoration: none;
+      margin-right: 20px;
       font-size: 14px;
-      padding: 8px 16px;
-      border-radius: 6px;
-      transition: background 0.2s;
     }
-    
-    .nav-links a:hover {
-      background: #f0f0f0;
+    .nav a:hover { text-decoration: underline; }
+    .article-list { list-style: none; }
+    .article-item {
+      padding: 20px 0;
+      border-bottom: 1px solid #f0f0f0;
     }
-    
-    .nav-links .primary {
-      background: #007aff;
-      color: white;
-    }
-    
-    .nav-links .primary:hover {
-      background: #0051a3;
-    }
-    
-    .articles {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    
-    .article {
-      padding: 20px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      transition: background 0.2s;
-    }
-    
-    .article:hover {
-      background: #f9f9f9;
-    }
-    
-    .article:last-child {
-      border-bottom: none;
-    }
-    
-    .article-info {
-      flex: 1;
-    }
-    
+    .article-item:last-child { border-bottom: none; }
     .article-title {
+      font-size: 18px;
       font-weight: 600;
       margin-bottom: 8px;
-      color: #333;
-      font-size: 16px;
     }
-    
-    .article-url {
-      color: #007aff;
-      text-decoration: none;
-      font-size: 14px;
-      word-break: break-all;
-      display: block;
-      margin-bottom: 8px;
-    }
-    
-    .article-url:hover {
-      text-decoration: underline;
-    }
-    
-    .article-description {
+    .article-title a { color: #333; text-decoration: none; }
+    .article-title a:hover { color: #007aff; }
+    .article-summary {
       color: #666;
       font-size: 14px;
-      margin-bottom: 8px;
-      line-height: 1.5;
-    }
-    
-    .article-date {
-      color: #999;
-      font-size: 12px;
-    }
-    
-    .article-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    
-    .delete-btn {
-      background: #ff3b30;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    
-    .delete-btn:hover {
-      background: #d70015;
-    }
-    
-    .empty-state {
-      padding: 60px 20px;
-      text-align: center;
-      color: #999;
-    }
-    
-    .empty-state h2 {
-      color: #666;
+      line-height: 1.6;
       margin-bottom: 10px;
     }
-    
-    .empty-state p {
-      margin-bottom: 20px;
-    }
-    
-    .empty-state a {
-      color: #007aff;
-      text-decoration: none;
-      padding: 10px 20px;
-      border: 2px solid #007aff;
-      border-radius: 6px;
-      display: inline-block;
-      transition: all 0.2s;
-    }
-    
-    .empty-state a:hover {
-      background: #007aff;
-      color: white;
-    }
-    
-    .loading {
-      padding: 40px;
-      text-align: center;
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      font-size: 12px;
       color: #999;
     }
-    
-    .error-state {
-      padding: 40px;
+    .article-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      background: #e8f4fd;
+      color: #007aff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .rss-badge {
+      background: #ffeaa7;
+      color: #d35400;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .loading {
       text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    .error {
+      text-align: center;
+      padding: 40px;
       color: #ff3b30;
     }
-    
-    .message {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      border-radius: 8px;
-      animation: slideIn 0.3s ease;
-      z-index: 1000;
-    }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(100%);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    
-    .success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    
-    .error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    
-    .stats {
-      background: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      font-size: 14px;
-      color: #666;
-    }
-
-    .exclude-badge {
-      background: #ff9500;
-      color: white;
-      font-size: 10px;
-      font-weight: 500;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 8px;
-      vertical-align: middle;
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #999;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>記事一覧</h1>
-    <div class="nav-links">
-      <a href="/" class="primary">記事を追加</a>
-      <a href="/feed.xml">RSS Feed</a>
+  <div class="container">
+    <div class="nav">
+      <a href="/">📝 記事追加</a>
+      <a href="/search.html">🔍 検索</a>
+      <a href="/ask.html">💬 質問</a>
+      <a href="/feed.xml">📡 RSS</a>
     </div>
-  </header>
-  
-  <div id="message"></div>
-  
-  <div id="stats" class="stats" style="display: none;"></div>
-  
-  <div class="articles" id="articlesList">
-    <div class="loading">読み込み中...</div>
+    
+    <h1>📋 記事一覧</h1>
+    
+    <div id="content">
+      <div class="loading">読み込み中...</div>
+    </div>
   </div>
 
   <script>
-    // 記事一覧を取得
     async function loadArticles() {
-      console.log('記事一覧を取得開始...');
+      const content = document.getElementById('content');
+      
       try {
         const response = await fetch('/api/articles');
-        console.log('APIレスポンス:', response.status, response.statusText);
+        const data = await response.json();
         
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          content.innerHTML = `<div class="error">エラー: ${data.error}</div>`;
+          return;
         }
         
-        const data = await response.json();
-        console.log('取得したデータ:', data);
+        const articles = data.articles || [];
         
-        const container = document.getElementById('articlesList');
-        const statsEl = document.getElementById('stats');
-        
-        if (data.articles && data.articles.length > 0) {
-          // 統計情報を表示
-          statsEl.style.display = 'block';
-          statsEl.textContent = `${data.articles.length} 件の記事`;
-          
-          container.innerHTML = data.articles.map(article => `
-            <div class="article">
-              <div class="article-info">
-                <div class="article-title">
-                  ${escapeHtml(article.title)}
-                  ${article.exclude_from_rss ? '<span class="exclude-badge">RSS除外</span>' : ''}
-                </div>
-                <a href="${escapeHtml(article.url)}" target="_blank" class="article-url">
-                  ${escapeHtml(article.url)}
-                </a>
-                ${article.description ? `
-                  <div class="article-description">${escapeHtml(article.description)}</div>
-                ` : ''}
-                <div class="article-date">
-                  追加日時: ${new Date(article.read_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
-                </div>
-              </div>
-              <div class="article-actions">
-                <button class="delete-btn" onclick="deleteArticle(${article.id})">削除</button>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          statsEl.style.display = 'none';
-          container.innerHTML = `
-            <div class="empty-state">
-              <h2>記事がありません</h2>
-              <p>まだ記事が登録されていません</p>
-              <a href="/">最初の記事を追加</a>
-            </div>
-          `;
+        if (articles.length === 0) {
+          content.innerHTML = '<div class="empty">まだ記事がありません</div>';
+          return;
         }
-      } catch (error) {
-        console.error('記事の読み込みエラー:', error);
-        document.getElementById('articlesList').innerHTML = `
-          <div class="error-state">
-            <h2>読み込みエラー</h2>
-            <p>${error.message}</p>
-            <button onclick="loadArticles()" style="margin-top: 20px; padding: 10px 20px; background: #007aff; color: white; border: none; border-radius: 6px; cursor: pointer;">
-              再試行
-            </button>
-          </div>
+        
+        const html = `
+          <ul class="article-list">
+            ${articles.map(article => `
+              <li class="article-item">
+                <h2 class="article-title">
+                  <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener">${escapeHtml(article.title)}</a>
+                </h2>
+                ${article.summary ? `<p class="article-summary">${escapeHtml(article.summary)}</p>` : ''}
+                <div class="article-meta">
+                  <span>${formatDate(article.scraped_at)}</span>
+                  ${article.publish_rss ? '<span class="rss-badge">RSS</span>' : ''}
+                  ${article.tags && article.tags.length > 0 ? `
+                    <div class="article-tags">
+                      ${article.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+                ${article.memo ? `<p class="article-summary" style="margin-top: 8px; font-style: italic;">📝 ${escapeHtml(article.memo)}</p>` : ''}
+              </li>
+            `).join('')}
+          </ul>
         `;
-      }
-    }
-    
-    // 記事を削除
-    async function deleteArticle(id) {
-      if (!confirm('この記事を削除しますか？')) {
-        return;
-      }
-      
-      console.log('記事削除開始 ID:', id);
-      
-      try {
-        const response = await fetch(`/api/articles/${id}`, {
-          method: 'DELETE'
-        });
         
-        console.log('削除APIレスポンス:', response.status, response.statusText);
-        
-        if (response.ok) {
-          showMessage('記事を削除しました', 'success');
-          console.log('記事削除成功 ID:', id);
-          loadArticles();
-        } else {
-          const result = await response.json();
-          console.error('削除エラー:', result);
-          showMessage(result.error || '削除に失敗しました', 'error');
-        }
+        content.innerHTML = html;
       } catch (error) {
-        console.error('記事削除中のエラー:', error);
-        showMessage(`エラーが発生しました: ${error.message}`, 'error');
+        content.innerHTML = `<div class="error">読み込みエラー: ${error.message}</div>`;
       }
     }
     
-    // メッセージ表示
-    function showMessage(text, type) {
-      const messageEl = document.getElementById('message');
-      messageEl.className = `message ${type}`;
-      messageEl.textContent = text;
-      
-      // 一定時間後に非表示
-      setTimeout(() => {
-        messageEl.className = '';
-        messageEl.textContent = '';
-      }, 3000);
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
     
-    // HTMLエスケープ
-    function escapeHtml(unsafe) {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
     
-    // 初期読み込み
     loadArticles();
   </script>
 </body>

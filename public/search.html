@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>検索 - Article Search</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 { color: #333; margin-bottom: 20px; font-size: 28px; }
+    .nav {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .nav a {
+      color: #007aff;
+      text-decoration: none;
+      margin-right: 20px;
+      font-size: 14px;
+    }
+    .nav a:hover { text-decoration: underline; }
+    .search-form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #007aff;
+    }
+    .search-btn {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .search-btn:hover { background: #0051a3; }
+    .search-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .results { margin-top: 20px; }
+    .result-item {
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .result-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .result-title a { color: #333; text-decoration: none; }
+    .result-title a:hover { color: #007aff; }
+    .result-score {
+      display: inline-block;
+      background: #d4edda;
+      color: #155724;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 8px;
+    }
+    .result-summary {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .result-chunk {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+    .result-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .tag {
+      background: #e8f4fd;
+      color: #007aff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .loading, .empty, .error {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    .error { color: #ff3b30; }
+    .help-text {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <a href="/">📝 記事追加</a>
+      <a href="/articles.html">📋 一覧</a>
+      <a href="/ask.html">💬 質問</a>
+      <a href="/feed.xml">📡 RSS</a>
+    </div>
+    
+    <h1>🔍 記事検索</h1>
+    <p class="help-text">キーワードや文章で類似記事を検索（ベクトル検索）</p>
+    
+    <form class="search-form" id="searchForm">
+      <input type="text" class="search-input" id="query" placeholder="検索キーワードを入力..." required autofocus>
+      <button type="submit" class="search-btn" id="searchBtn">検索</button>
+    </form>
+    
+    <div id="results"></div>
+  </div>
+
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const query = document.getElementById('query').value.trim();
+      if (!query) return;
+      
+      const results = document.getElementById('results');
+      const searchBtn = document.getElementById('searchBtn');
+      
+      searchBtn.disabled = true;
+      searchBtn.textContent = '検索中...';
+      results.innerHTML = '<div class="loading">検索中...</div>';
+      
+      try {
+        const response = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, limit: 10 })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          results.innerHTML = `<div class="error">エラー: ${data.error}</div>`;
+          return;
+        }
+        
+        const items = data.results || [];
+        
+        if (items.length === 0) {
+          results.innerHTML = '<div class="empty">検索結果がありません</div>';
+          return;
+        }
+        
+        results.innerHTML = items.map(item => `
+          <div class="result-item">
+            <h3 class="result-title">
+              <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
+              <span class="result-score">スコア: ${(item.score * 100).toFixed(1)}%</span>
+            </h3>
+            ${item.summary ? `<p class="result-summary">${escapeHtml(item.summary)}</p>` : ''}
+            ${item.tags && item.tags.length > 0 ? `
+              <div class="result-tags">
+                ${item.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+              </div>
+            ` : ''}
+            ${item.chunk_text ? `
+              <div class="result-chunk">
+                <strong>マッチ箇所:</strong><br>
+                ${escapeHtml(item.chunk_text.substring(0, 300))}${item.chunk_text.length > 300 ? '...' : ''}
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        results.innerHTML = `<div class="error">検索エラー: ${error.message}</div>`;
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = '検索';
+      }
+    });
+    
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

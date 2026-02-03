@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "my-rss-feed",
+  "name": "article-search-app",
   "main": "src/index.ts",
   "compatibility_date": "2025-08-26",
   "compatibility_flags": [
@@ -9,43 +9,15 @@
   "assets": {
     "directory": "./public/"
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "rss-feed-db",
-      "database_id": "fd3551a1-87ae-44be-98ad-c63269518d8c"
-    }
-  ]
-  // "compatibility_flags": [
-  //   "nodejs_compat"
-  // ],
-  // "vars": {
-  //   "MY_VAR": "my-variable"
-  // },
-  // "kv_namespaces": [
-  //   {
-  //     "binding": "MY_KV_NAMESPACE",
-  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  //   }
-  // ],
-  // "r2_buckets": [
-  //   {
-  //     "binding": "MY_BUCKET",
-  //     "bucket_name": "my-bucket"
-  //   }
-  // ],
-  // "d1_databases": [
-  //   {
-  //     "binding": "MY_DB",
-  //     "database_name": "my-database",
-  //     "database_id": ""
-  //   }
-  // ],
-  // "ai": {
-  //   "binding": "AI"
-  // },
-  // "observability": {
-  //   "enabled": true,
-  //   "head_sampling_rate": 1
-  // }
+  // 環境変数は .dev.vars (ローカル) と Cloudflare Dashboard (本番) で設定
+  // 必要な環境変数:
+  // - BASIC_USERNAME: Basic認証ユーザー名
+  // - BASIC_PASSWORD: Basic認証パスワード
+  // - N8N_WEBHOOK_URL: n8n記事登録webhook URL
+  // - QDRANT_URL: Qdrant API URL (例: http://localhost:6333)
+  // - COHERE_API_KEY: Cohere API Key
+  // - DIFY_API_URL: Dify API URL (例: http://localhost:8080/v1)
+  // - DIFY_API_KEY: Dify API Key
+  // - RSS_TITLE: RSSフィードのタイトル
+  // - RSS_LINK: RSSフィードのリンク
 }

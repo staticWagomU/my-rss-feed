@@ -1,10 +1,14 @@
-export function generateRSS(articles: Array<{
-  id: number;
-  title: string;
-  url: string;
-  description: string;
-  read_at: string;
-}>): string {
+export function generateRSS(
+  articles: Array<{
+    id: string;
+    title: string;
+    url: string;
+    description: string;
+    read_at: string;
+  }>,
+  feedTitle: string = 'My Reading List',
+  feedLink: string = 'https://example.com'
+): string {
   const items = articles.map(article => `
     <item>
       <title><![CDATA[${article.title}]]></title>
@@ -18,12 +22,12 @@ export function generateRSS(articles: Array<{
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>My Reading List</title>
-    <link>https://your-domain.pages.dev</link>
-    <description>Articles I've read</description>
+    <title>${escapeXml(feedTitle)}</title>
+    <link>${escapeXml(feedLink)}</link>
+    <description>記事フィード</description>
     <language>ja</language>
     <lastBuildDate>${formatDateToRFC822(new Date())}</lastBuildDate>
-    <atom:link href="https://your-domain.pages.dev/feed.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="${escapeXml(feedLink)}/feed.xml" rel="self" type="application/rss+xml" />
     ${items}
   </channel>
 </rss>`;
@@ -43,11 +47,9 @@ function formatDateToRFC822(date: Date): string {
     hour12: false,
   };
 
-  // 英語ロケールで日時をフォーマット
   const formatter = new Intl.DateTimeFormat('en-US', options);
   const parts = formatter.formatToParts(date);
   
-  // パーツから各要素を取得
   const getValue = (type: string) => parts.find(p => p.type === type)?.value || '';
   
   const weekday = getValue('weekday');
@@ -58,7 +60,6 @@ function formatDateToRFC822(date: Date): string {
   const minute = getValue('minute');
   const second = getValue('second');
   
-  // RFC822形式: "Wed, 02 Oct 2002 13:00:00 +0900"
   return `${weekday}, ${day} ${month} ${year} ${hour}:${minute}:${second} +0900`;
 }
 

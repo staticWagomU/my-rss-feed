@@ -3,14 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>記事を追加 - RSS Feed Manager</title>
+  <title>記事を追加 - Article Search</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       max-width: 600px;
@@ -18,34 +13,16 @@
       padding: 40px 20px;
       background: #f5f5f5;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
     }
-    
     .container {
       background: white;
       padding: 40px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 28px;
-    }
-    
-    .subtitle {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
+    h1 { color: #333; margin-bottom: 10px; font-size: 28px; }
+    .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+    .form-group { margin-bottom: 20px; }
     label {
       display: block;
       margin-bottom: 8px;
@@ -53,12 +30,7 @@
       font-size: 14px;
       font-weight: 500;
     }
-    
-    .required {
-      color: #ff3b30;
-      margin-left: 2px;
-    }
-    
+    .required { color: #ff3b30; margin-left: 2px; }
     input, textarea {
       width: 100%;
       padding: 12px;
@@ -67,24 +39,16 @@
       font-size: 16px;
       transition: border-color 0.2s;
     }
-    
     input:focus, textarea:focus {
       outline: none;
       border-color: #007aff;
     }
-    
     textarea {
       resize: vertical;
       min-height: 80px;
       font-family: inherit;
     }
-    
-    .button-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 30px;
-    }
-    
+    .button-group { display: flex; gap: 12px; margin-top: 30px; }
     button {
       flex: 1;
       background: #007aff;
@@ -97,142 +61,72 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    
-    button:hover {
-      background: #0051a3;
-    }
-    
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    
-    .secondary-btn {
-      background: #f0f0f0;
-      color: #333;
-    }
-    
-    .secondary-btn:hover {
-      background: #e0e0e0;
-    }
-    
+    button:hover { background: #0051a3; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .secondary-btn { background: #f0f0f0; color: #333; }
+    .secondary-btn:hover { background: #e0e0e0; }
     .message {
       padding: 12px 16px;
       border-radius: 8px;
       margin-bottom: 20px;
       animation: slideDown 0.3s ease;
     }
-    
     @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    
-    .success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    
-    .error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    
+    .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     .links {
       margin-top: 30px;
       padding-top: 30px;
       border-top: 1px solid #e0e0e0;
       text-align: center;
     }
-    
     .links a {
       color: #007aff;
       text-decoration: none;
-      margin: 0 15px;
+      margin: 0 12px;
       font-size: 14px;
     }
-    
-    .links a:hover {
-      text-decoration: underline;
-    }
-    
-    .help-text {
-      font-size: 12px;
-      color: #999;
-      margin-top: 5px;
-    }
-
+    .links a:hover { text-decoration: underline; }
+    .help-text { font-size: 12px; color: #999; margin-top: 5px; }
     .checkbox-group {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 8px;
     }
-
-    .checkbox-label {
-      font-size: 14px;
-      color: #444;
-      cursor: pointer;
-      margin-bottom: 0;
-    }
-
-    input[type="checkbox"] {
-      width: auto;
-      margin: 0;
-      cursor: pointer;
-    }
+    .checkbox-label { font-size: 14px; color: #444; cursor: pointer; margin-bottom: 0; }
+    input[type="checkbox"] { width: auto; margin: 0; cursor: pointer; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>記事を追加</h1>
-    <p class="subtitle">読んだ記事のURLを保存して、RSSフィードとして配信します</p>
+    <h1>📝 記事を追加</h1>
+    <p class="subtitle">URLを入力するとAIが自動で要約・タグ付けしてくれます</p>
     
     <div id="message"></div>
     
     <form id="addForm">
       <div class="form-group">
-        <label for="url">
-          URL
-          <span class="required">*</span>
-        </label>
-        <input 
-          type="url" 
-          id="url" 
-          name="url" 
-          required 
-          placeholder="https://example.com/article"
-          autofocus
-        >
-        <p class="help-text">記事のURLを入力してください（タイトルは自動取得されます）</p>
+        <label for="url">URL <span class="required">*</span></label>
+        <input type="url" id="url" name="url" required placeholder="https://example.com/article" autofocus>
+        <p class="help-text">記事のURLを入力（タイトル・要約・タグは自動生成）</p>
       </div>
       
       <div class="form-group">
-        <label for="description">メモ</label>
-        <textarea
-          id="description"
-          name="description"
-          placeholder="この記事についてのメモ（省略可）"
-        ></textarea>
+        <label for="memo">メモ</label>
+        <textarea id="memo" name="memo" placeholder="この記事についてのメモ（省略可）"></textarea>
         <p class="help-text">後で見返すときのためのメモを残せます</p>
       </div>
 
       <div class="form-group">
         <div class="checkbox-group">
-          <input type="checkbox" id="excludeFromRss" name="excludeFromRss">
-          <label for="excludeFromRss" class="checkbox-label">
-            RSS feedから除外
-          </label>
+          <input type="checkbox" id="publishRss" name="publishRss" checked>
+          <label for="publishRss" class="checkbox-label">RSS feedに含める</label>
         </div>
-        <p class="help-text">チェックを入れると、この記事はRSS feedに含まれません</p>
+        <p class="help-text">チェックを外すと、この記事はRSSに含まれません</p>
       </div>
       
       <div class="button-group">
@@ -242,97 +136,68 @@
     </form>
     
     <div class="links">
-      <a href="/articles">記事一覧</a>
-      <a href="/feed.xml">RSS Feed</a>
+      <a href="/articles.html">📋 記事一覧</a>
+      <a href="/search.html">🔍 検索</a>
+      <a href="/ask.html">💬 質問</a>
+      <a href="/feed.xml">📡 RSS</a>
     </div>
   </div>
 
   <script>
-    // フォーム送信処理
     document.getElementById('addForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const formData = new FormData(e.target);
-      const urlInput = formData.get('url');
+      const url = document.getElementById('url').value;
+      const memo = document.getElementById('memo').value;
+      const publishRss = document.getElementById('publishRss').checked;
       
       // URLバリデーション
       try {
-        const urlObj = new URL(urlInput);
+        const urlObj = new URL(url);
         if (!['http:', 'https:'].includes(urlObj.protocol)) {
           showMessage('HTTPまたはHTTPSのURLを入力してください', 'error');
           return;
         }
-      } catch (error) {
+      } catch {
         showMessage('正しいURL形式を入力してください', 'error');
         return;
       }
       
-      const data = {
-        url: urlInput,
-        description: formData.get('description') || '',
-        exclude_from_rss: document.getElementById('excludeFromRss').checked
-      };
-      
-      console.log('送信データ:', data);
-      
       const submitBtn = document.getElementById('submitBtn');
-      const originalText = submitBtn.textContent;
       submitBtn.disabled = true;
-      submitBtn.textContent = '追加中...';
+      submitBtn.textContent = '登録中...';
       
       try {
         const response = await fetch('/api/articles', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, memo, publish_rss: publishRss })
         });
         
-        console.log('APIレスポンス:', response.status, response.statusText);
-        
         const result = await response.json();
-        console.log('レスポンスデータ:', result);
         
         if (response.ok) {
-          showMessage('記事を追加しました！', 'success');
-          console.log('記事追加成功:', result);
+          showMessage('記事登録を受け付けました！（バックグラウンドで処理中）', 'success');
           e.target.reset();
+          document.getElementById('publishRss').checked = true;
           document.getElementById('url').focus();
         } else {
-          const errorMsg = result.error || '追加に失敗しました';
-          showMessage(errorMsg, 'error');
-          console.error('記事追加エラー:', errorMsg);
+          showMessage(result.error || '追加に失敗しました', 'error');
         }
       } catch (error) {
-        console.error('記事追加中のエラー:', error);
-        console.error('エラースタック:', error.stack);
-        showMessage(`エラーが発生しました: ${error.message}`, 'error');
+        showMessage(`エラー: ${error.message}`, 'error');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
+        submitBtn.textContent = '追加';
       }
     });
     
-    // メッセージ表示
     function showMessage(text, type) {
-      const messageEl = document.getElementById('message');
-      messageEl.className = `message ${type}`;
-      messageEl.textContent = text;
-      
-      // 一定時間後に非表示
-      setTimeout(() => {
-        messageEl.className = '';
-        messageEl.textContent = '';
-      }, 5000);
+      const el = document.getElementById('message');
+      el.className = `message ${type}`;
+      el.textContent = text;
+      setTimeout(() => { el.className = ''; el.textContent = ''; }, 5000);
     }
-    
-    // Enterキーでのsubmit制御（textareaでは改行を許可）
-    document.getElementById('description').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.stopPropagation();
-      }
-    });
   </script>
 </body>
 </html>
