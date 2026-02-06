@@ -5,19 +5,23 @@
 
   outputs = { nixpkgs, ... }:
     let
-      system = "aarch64-darwin";
-      pkgs = nixpkgs.legacyPackages.${system};
+      systems = [ "x86_64-linux" "aarch64-darwin" ];
+      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f {
+        pkgs = nixpkgs.legacyPackages.${system};
+      });
     in {
-      devShells.${system}.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
-          nodejs_24
-          nodePackages.pnpm
-        ];
-        
-        shellHook = ''
-          echo "Node.js: $(node --version)"
-          echo "pnpm: $(pnpm --version)"
-        '';
-      };
+      devShells = forAllSystems ({ pkgs }: {
+        default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            nodejs_22
+            nodePackages.pnpm
+          ];
+          
+          shellHook = ''
+            echo "Node.js: $(node --version)"
+            echo "pnpm: $(pnpm --version)"
+          '';
+        };
+      });
     };
 }

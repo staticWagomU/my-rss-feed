@@ -10,11 +10,11 @@
  *    node scripts/migrate-d1-to-qdrant.js articles.json
  */
 
-const fs = require('fs');
+import fs from 'fs';
 
 // 設定
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://desktop-1.tail01a12.ts.net:8445/webhook/register-article';
-const DELAY_MS = 5000; // リクエスト間の待機時間（5秒）
+const DELAY_MS = 10000; // リクエスト間の待機時間（10秒）
 
 async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -65,8 +65,15 @@ async function main() {
   // JSONファイルを読み込み
   const data = JSON.parse(fs.readFileSync(inputFile, 'utf-8'));
   
-  // wranglerの出力形式に対応
-  const articles = data.results || data;
+  // wranglerの出力形式に対応: [{ results: [...] }]
+  let articles;
+  if (Array.isArray(data) && data[0]?.results) {
+    articles = data[0].results;
+  } else if (data.results) {
+    articles = data.results;
+  } else {
+    articles = data;
+  }
   
   if (!Array.isArray(articles)) {
     console.error('エラー: articles配列が見つかりません');

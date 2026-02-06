@@ -1,12 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { generateRSS } from './utils/rss';
-import { basicAuth } from './middleware/basic-auth';
 
 type Bindings = {
-  // 認証
-  BASIC_USERNAME: string;
-  BASIC_PASSWORD: string;
   // 外部サービス
   N8N_WEBHOOK_URL: string;      // n8n記事登録webhook
   QDRANT_URL: string;           // Qdrant API URL
@@ -26,7 +22,7 @@ app.use('/*', cors());
 // ========================================
 // 記事登録 (n8n経由)
 // ========================================
-app.post('/api/articles', basicAuth, async (c) => {
+app.post('/api/articles', async (c) => {
   try {
     const body = await c.req.json();
 
@@ -181,7 +177,7 @@ app.post('/api/search', async (c) => {
 // ========================================
 // RAG検索 (Dify経由 - 自然言語で質問)
 // ========================================
-app.post('/api/ask', basicAuth, async (c) => {
+app.post('/api/ask', async (c) => {
   try {
     const body = await c.req.json();
     const question = body.question;
